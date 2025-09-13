@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title> AI VChatBot</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .chat-wrapper {
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 600px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 15px;
+      color: #333;
+      font-weight: 700;
+      font-size: 24px;
+    }
+
+    #chat-container {
+      background: #f7f7f7;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+      height: 350px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+    }
+
+    .chat-message {
+      margin-bottom: 12px;
+    }
+
+    .user-message p {
+      background-color: #dcf8c6;
+      text-align: right;
+      padding: 10px 15px;
+      border-radius: 20px;
+      display: inline-block;
+      max-width: 80%;
+      margin-left: auto;
+    }
+
+    .bot-message p {
+      background-color: #e3eaf5;
+      padding: 10px 15px;
+      border-radius: 20px;
+      display: inline-block;
+      max-width: 80%;
+    }
+
+    .input-area {
+      display: flex;
+      align-items: center;
+      border: 1px solid #ccc;
+      border-radius: 30px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .input-area button {
+      background: none;
+      border: none;
+      font-size: 20px;
+      padding: 0 15px;
+      cursor: pointer;
+      color: #555;
+    }
+
+    .input-area button:hover {
+      color: #000;
+    }
+
+    .input-area input {
+      flex: 1;
+      border: none;
+      padding: 12px 10px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    #chat-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    #chat-container::-webkit-scrollbar-thumb {
+      background-color: #ccc;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-wrapper">
+    <h1>🤖 AI VChatBot</h1>
+
+    <!-- Chat Container -->
+    <div id="chat-container">
+      <div class="chat-message bot-message">
+        <p>Hi there! I'm your Gemini AI assistant. How can I help you today?</p>
+      </div>
+    </div>
+
+    <!-- Input Box -->
+    <div class="input-area">
+      <input type="text" id="user-input" placeholder="Ask anything..." />
+      <button id="send-btn" title="Send">➤</button>
+    </div>
+  </div>
+
+  <script>
+    const chatContainer = document.getElementById('chat-container');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    function addMessage(content, isBot = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `chat-message ${isBot ? 'bot-message' : 'user-message'}`;
+      messageDiv.innerHTML = `<p>${content}</p>`;
+      chatContainer.appendChild(messageDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const inputText = userInput.value.trim();
+      if (!inputText) return;
+
+      addMessage(inputText);
+      userInput.value = '';
+
+      try {
+        const response = await fetch('/api/chat', {   // ✅ matches Flask blueprint
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: inputText })
+        });
+        const data = await response.json();
+        setTimeout(() => addMessage(data.response, true), 400); // ✅ use "response"
+      } catch (error) {
+        addMessage('⚠️ Error connecting to server.', true);
+      }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+
+</body>
+</html>
